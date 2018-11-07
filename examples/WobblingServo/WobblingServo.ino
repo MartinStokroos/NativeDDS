@@ -8,8 +8,6 @@
  * License: MIT License
  *
  *
- * Copyright (c) M.Stokroos 2018
- *
  * This sketch demonstrates the Native DDS library. Native DDS is a Direct Digital Synthesizer
  * algorithm that runs in software on the Arduino. In this example the DDS sine wave output frequency
  * is set to 0.1Hz. A servo motor connected to pin 3 slowly modulates between MIN_ANGLE and
@@ -41,7 +39,6 @@ Servo myServo;  // create an instance of Servo
 
 void setup() {
   pinMode(DEBUG_PIN, OUTPUT);  
-
   myServo.attach(SERVO_PIN);
   myServo.write( (MIN_ANGLE + MAX_ANGLE)/2 );  //Set the servo to the mid-position
 
@@ -54,7 +51,6 @@ void setup() {
 
 void loop() {
   // run repeatedly:
-  
   digitalWrite(DEBUG_PIN, HIGH);  //For checking loop period time and execution (signal high) time with an oscilloscope. 
   
   mySine.update();  //DDS update
@@ -73,4 +69,3 @@ void loop() {
 } // measured execution time <20us
 
 // end of WobblingServo.ino
-
