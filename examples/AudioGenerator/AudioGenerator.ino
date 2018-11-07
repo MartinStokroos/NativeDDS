@@ -7,11 +7,9 @@
  * URL: https://github.com/MartinStokroos/NativeDDS
  * License: MIT License
  *
- * Copyright (c) M.Stokroos 2018
- *
  * This sketch demonstrates the Native DDS library. Native DDS is a Direct Digital Synthesizer
  * algorithm that runs in software on the Arduino. In this example, a 220Hz and a 440Hz sine wave are 
- * simultaneously generated with the 2-channel function of the DDS. The two pulse width modulated sine waves 
+ * simultaneously generated with the 2-channel module of the DDS. The two pulse width modulated sine waves 
  * are available on pin 3 and pin 11.
  *
  * In this example the native DDS runs at about 32kHz and this frequency is the 'clock frequency' of the DDS.
@@ -31,9 +29,9 @@
 //#define DEBUG
 
 #if defined(DEBUG)
-	#include <digitalWriteFast.h>   // library for high performance digital reads and writes by J.R. Raines
-				                        // see http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1267553811/0
-				                        // and http://code.google.com/p/digitalwritefast/
+#include <digitalWriteFast.h>   // library for high performance digital reads and writes by J.R. Raines
+			        // see http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1267553811/0
+			        // and http://code.google.com/p/digitalwritefast/
 #endif
 
 
@@ -49,29 +47,29 @@ DDS_2Ch mySine;	// Create instance for 8-bit dual channel DDS.
 
 
 void setup() {
-  pinMode(PWM_OUT1, OUTPUT);  // PWM output 1
-  pinMode(PWM_OUT2, OUTPUT);  // PWM output 2
-  pinMode(DEBUG_PIN, OUTPUT); // debug PIN for timing observation (=LED pin)
+	pinMode(PWM_OUT1, OUTPUT);  // PWM output 1
+	pinMode(PWM_OUT2, OUTPUT);  // PWM output 2
+	pinMode(DEBUG_PIN, OUTPUT); // debug PIN for timing observation (=LED pin)
 
-  /* Setup for Timer 2 for mode 1, Phase Correct PWM mode.
-   *
-   * analogWrite can no longer be used to pin 3 and 11.
-   * set prescaler to 1
-   * foc = fclk/(N*510) = 16e6/(1*510) = 31372.549Hz
-   */
-  bitSet(TCCR2B, CS20);
-  bitClear(TCCR2B, CS21);
-  bitClear(TCCR2B, CS22);
-  bitClear(TCCR2A, COM2A0); // clear Compare Match pin11
-  bitSet(TCCR2A, COM2A1);
-  bitClear(TCCR2A, COM2B0); // clear Compare Match pin3
-  bitSet(TCCR2A, COM2B1);
-  bitSet(TCCR2A, WGM20);    // mode 1, phase correct PWM
-  bitClear(TCCR2A, WGM21);
-  bitClear(TCCR2B, WGM22);
-  bitSet(TIMSK2, TOIE2);    // enable Timer2 Interrupt
+	/* Setup for Timer 2 for mode 1, Phase Correct PWM mode.
+ 	*
+	* analogWrite can no longer be used on pin 3 and 11.
+	* set prescaler to 1
+	* foc = fclk/(N*510) = 16e6/(1*510) = 31372.549Hz
+	*/
+	bitSet(TCCR2B, CS20);
+	bitClear(TCCR2B, CS21);
+	bittClear(TCCR2B, CS22);
+	bitClear(TCCR2A, COM2A0); // clear Compare Match pin11
+	bitSet(TCCR2A, COM2A1);
+	bitClear(TCCR2A, COM2B0); // clear Compare Match pin3
+	bitSet(TCCR2A, COM2B1);
+	bitSet(TCCR2A, WGM20);    // mode 1, phase correct PWM
+	bitClear(TCCR2A, WGM21);
+	bitClear(TCCR2B, WGM22);
+	bitSet(TIMSK2, TOIE2);    // enable Timer2 Interrupt
 
-  mySine.begin(f, 2*f, 0, 0, Ts);  // Initialize DDS module. f1=220Hz, f2=440Hz.
+	mySine.begin(f, 2*f, 0, 0, Ts);  // Initialize DDS module. f1=220Hz, f2=440Hz.
 }
 
 
