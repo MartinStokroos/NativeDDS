@@ -65,7 +65,7 @@ DDS_3Ph: `outu`, `outv`, `outw`
 
 `WobblingServo.ino` - A slowly sine-wave modulated servo motor application.
 
-`AudioGenerator.ino` - A generator for audible frequencies. A timer interrupt has been used for a fixed time base.
+`AudioGenerator.ino` - A generator for audible frequencies. A timer interrupt has been used to create a fixed time base.
 
 ## Acknowledgement
 A lot of time was saved in developing this library by using the "other" Arduino IDE *Sloeber*. Sloeber is a wonderful Arduino plugin for Eclipse. Thanks to Jantje and his contributors! 
