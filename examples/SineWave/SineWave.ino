@@ -8,8 +8,6 @@
  * License: MIT License
  *
  *
- * Copyright (c) M.Stokroos 2018
- *
  * This sketch demonstrates the Native DDS library. Native DDS is a Direct Digital Synthesizer
  * algorithm that runs in software on the Arduino. In this example the sine wave output frequency
  * is set to 1Hz. The pulse width modulated sine wave is available on pin 3.
@@ -56,7 +54,6 @@ void setup() {
 
 void loop() {
 	// run repeatedly:
-
 	#if defined(EIGHTBIT)
 		digitalWrite(DEBUG_PIN, HIGH);  // for checking loop period time and loop execution time (signal high time)
 		mySine.update();  //update the DDS
@@ -71,7 +68,6 @@ void loop() {
 		output = mySine.out1 + 511; // add 511 to convert to unsigned.
 		analogWrite(PWM_OUT, output>>2); // convert to 8-bit and write to analog out.
 	#endif
-
 
 	while(nextLoop > micros());  // wait until the end of the time interval
 	nextLoop += LPERIOD;  // set next loop time at current time + LOOP_PERIOD
