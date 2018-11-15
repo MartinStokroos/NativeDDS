@@ -42,13 +42,13 @@ DDS_IQ: `outi`, `outq`
 DDS_3Ph: `outu`, `outv`, `outw`
 
 ## Usage
-* First create an instance of the library object, for example we define mySin:
+* First create an instance of the library object, for example here we define *mySin*:
 
 ```
 DDS_1Ch mySine;
 ```
 
-* Initialize the DDS in somewhere in the setup function: 
+* Initialize the DDS on some place in your setup function: 
 
 ```
 void setup() {
@@ -58,7 +58,7 @@ void setup() {
 }
 ```
 
-* Call `mySine.update();` from the main loop or from an Interrupt Service Routine. Use `.update(void)` on the basis of a regular time interval to generate a jitter free output signal.
+* Call `mySine.update();` from the main loop or from an Interrupt Service Routine (ISR). Use `.update(void)` on the basis of a regular time interval to generate a jitter free output signal.
 
 Right after the previous step, the instantaneous output value is obtained with: `int sample = mySine.out1;`
 
@@ -71,7 +71,6 @@ void loop() {
 	...
 }
 ```
-
 
 ## Examples
 `SineWave.ino` - Example of a single channel DDS. The time base is generated in the main loop. The maximum usable output frequency is limited to about 100Hz.
