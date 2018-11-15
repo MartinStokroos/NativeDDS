@@ -16,13 +16,17 @@ The following library classes are implemented:
 The following methods exists:
 
 `.begin()`
+
 `.update()`
 
 Initialize the class instance with the member function `begin()`. Also, `begin()` must be called each time when the frequency or phase has to be updated.
 
 DDS_1Ch,  use: `.begin(float frequency, float starting-phase, float timestep);`
+
 DDS_2Ch,  use: `.begin(float frequency1, float frequency2, starting-phase1, float starting-phase2, timestep);`
+
 DDS_IQ, use: `.begin(float frequency, float starting-phase, float timestep);`
+
 DDS_3Ph, use: `.begin(float frequency, float starting-phase, float timestep);`
 
 For the member function `.begin()`, the variable `frequency` is in Hz and `starting-phase` in radians. `timestep` is the loop iteration time period in seconds with which `.update()` is repeatedly invoked.
@@ -30,8 +34,11 @@ For the member function `.begin()`, the variable `frequency` is in Hz and `start
 The following public variables are defined for the outputs:
 
 DDS_1Ch: `out1`
+
 DDS_2Ch: `out1`, `out2`
+
 DDS_IQ: `outi`, `outq`
+
 DDS_3Ph: `outu`, `outv`, `outw`
 
 ## Usage
