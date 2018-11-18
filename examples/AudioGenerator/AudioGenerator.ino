@@ -7,24 +7,27 @@
  * URL: https://github.com/MartinStokroos/NativeDDS
  * License: MIT License
  *
+ * v1.0.0, 24 Oct 2018 - initial release
+ * v1.0.1, 18 Nov 2018 - some textual changes in comments
+ * 
  * This sketch demonstrates the Native DDS library. Native DDS is a Direct Digital Synthesizer
  * algorithm that runs in software on the Arduino. In this example, a 220Hz and a 440Hz sine wave are 
- * simultaneously generated with the 2-channel module of the DDS. The two pulse width modulated sine waves 
+ * simultaneously generated with the 2-channel module of the DDS. The pulse width modulated sine waves 
  * are available on pin 3 and pin 11.
  *
- * In this example the native DDS runs at about 32kHz and this frequency is the 'clock frequency' of the DDS.
- * In theory the maximum output frequency at 32kHz clock-frequency is 16kHz. Practically, with output filtering, the 
+ * In this example the native DDS runs at about 32kHz and this frequency is the update frequency (clock frequency)
+ * of the DDS. In theory the maximum output frequency for a 32kHz clocked DDS is 16kHz. With output filtering, the 
  * maximum output frequency is limited to about 1/5 of the clock frequency (~6kHz). For more information read: 
  * A Technical Tutorial on Digital Signal Synthesis, Ken Gentile and Rick Cushing, Analog Devices, 1999.
  *
- * To get a smooth output wave, output filtering, for example with a low pass RC-filter, is needed.
+ * To get a smooth output wave, a low pass filter (RC or multistage LC), is required.
  *
- * The loop timing can be observed with an oscilloscope on pin 13 when DEBUG is defined.
+ * The loop timing can be observed with an oscilloscope on pin 13. (define DEBUG and get digitalWriteFast).
  * Please, also check the other example projects of the NativeDDS library.
  *
 */
 
-#include <NativeDDS.h>
+#include <NativeDDS.h> //define EIGHTBIT
 
 //#define DEBUG
 
@@ -42,7 +45,7 @@
 const float Ts = 3.1875E-5; // Timer2 period
 float f = 220.0; // Wanted DDS output frequency
 
-DDS_2Ch mySine;	// Create instance for 8-bit dual channel DDS.
+DDS_2Ch mySine;	// Create instance of DDS_2Ch for a dual channel DDS.
 
 
 
@@ -81,11 +84,11 @@ void loop() {
 
 
 //******************************************************************
-// Timer2 ISR, running at 31372.549Hz
+// Timer2 ISR, running at 31372.549Hz, also the update rate of the DDS
 //******************************************************************
 ISR(TIMER2_OVF_vect) {
 	#if defined(DEBUG)
-		digitalWriteFast(DEBUG_PIN, true);  // for checking loop period time and loop execution time (signal high time)
+		digitalWriteFast(DEBUG_PIN, true);  // check the loop period time and the execution time in the loop.
 	#endif
 
 	mySine.update();
