@@ -62,7 +62,7 @@ void setup() {
 	*/
 	bitSet(TCCR2B, CS20);
 	bitClear(TCCR2B, CS21);
-	bittClear(TCCR2B, CS22);
+	bitClear(TCCR2B, CS22);
 	bitClear(TCCR2A, COM2A0); // clear Compare Match pin11
 	bitSet(TCCR2A, COM2A1);
 	bitClear(TCCR2A, COM2B0); // clear Compare Match pin3
