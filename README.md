@@ -80,4 +80,4 @@ void loop() {
 `AudioGenerator.ino` - A generator for audible frequencies. A timer interrupt has been used to create a fixed time base.
 
 ## Acknowledgement
-A lot of time was saved in developing this library by using the "other" Arduino-IDE *Sloeber*. Sloeber is a wonderful Arduino plugin for Eclipse. Thanks to Jantje and his contributors! 
+A lot of time was saved in developing this library by using the alternative Arduino-IDE [Sloeber](https://eclipse.baeyens.it/). Sloeber is a wonderful Arduino plugin for Eclipse. Thanks to Jantje and his contributors!
