@@ -3,10 +3,14 @@
  * File: WobblingServo.ino
  * Purpose: Native Direct Digital Synthesizer library example project
  * Version: 1.0.0
- * Date: 23-10-2018
+ * First release date: 23-10-2018
+ * Last edit date: 10-08-2020
+ * 
  * URL: https://github.com/MartinStokroos/NativeDDS
  * License: MIT License
  *
+ * Version history:
+ * v1.0.1, 10-08-2020 - select 8-bit/10bit DDS from main c file. Does not work (yet).
  *
  * This sketch demonstrates the Native DDS library. Native DDS is a Direct Digital Synthesizer
  * algorithm that runs in software on the Arduino. In this example the DDS sine wave output frequency
@@ -20,7 +24,8 @@
 */
 
 
-#include <NativeDDS.h>
+//#define DDS_8BIT  //Why does defining it here won't work? Now it still should be done from NativeDDS.h
+#include "NativeDDS.h"
 #include <Servo.h>
 
 #define LPERIOD 1000    // loop period time in us. In this case 1.0ms => f_clk=1kHz 

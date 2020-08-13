@@ -2,8 +2,13 @@
 * 
 * File: NativeDDS.cpp
 * Purpose: Native Direct Digital Synthesizer library functions
-* Version: 1.0.0
-* Date: 22-10-2018
+* Version: 1.0.1
+* Release date: 22-10-2018
+* Last edit date: 10-08-2020
+*
+* Version history:
+* v1.0.2, 10-08-2020 - changed the option switch DDS_8BIT/DDS_10BIT
+*
 * URL: https://github.com/MartinStokroos/NativeDDS
 * License: MIT License
 *
@@ -31,8 +36,9 @@
 #include "WProgram.h"
 #endif
 
+
+#if defined(DDS_8BIT)
 /* * * init functions * * */
-#ifdef EIGHTBIT
 void DDS_1Ch::begin(float _freq, float _startPhase, float _deltat) {
 	freq=_freq;
 	deltat=_deltat;
@@ -85,9 +91,53 @@ void DDS_3Ph::begin(float _freq, float _startPhase, float _deltat){
 	// set the starting phase
 	phaseAccu=startPhase*pow(2,32)/(2*PI);;
 }
-#endif
 
-#ifdef TENBIT
+
+/* * * Periodic update functions * * */
+void DDS_1Ch::update(void){
+	byte phaseIndex;
+
+	phaseAccu+=tuningWord;	//update the phase accumulator
+	phaseIndex=(byte)(phaseAccu>>24);	//truncate the phase accumulator to obtain the phase index pointer
+	out1=pgm_read_byte_near(sinlut256+phaseIndex) - 0x7F;	//read amplitude from look-up table and convert to signed int.
+}
+
+void DDS_2Ch::update(void){
+	byte phaseIndex1, phaseIndex2;
+
+	phaseAccu1+=tuningWord1;
+	phaseAccu2+=tuningWord2;
+	phaseIndex1=(byte)(phaseAccu1>>24);
+	phaseIndex2=(byte)(phaseAccu2>>24);
+	out1=pgm_read_byte_near(sinlut256+phaseIndex1) - 0x7F;
+	out2=pgm_read_byte_near(sinlut256+phaseIndex2) - 0x7F;
+}
+
+void DDS_IQ::update(void){
+	byte phaseIndexI, phaseIndexQ;
+
+	phaseAccu+=tuningWord;
+	phaseIndexI=(byte)(phaseAccu>>24);
+	phaseIndexQ=(byte)((phaseAccu+PHASE_OFFS_90)>>24); //add fixed phase offset for +90deg.
+	outi=pgm_read_byte_near(sinlut256+phaseIndexI) - 0x7F;
+	outq=pgm_read_byte_near(sinlut256+phaseIndexQ) - 0x7F;
+}
+
+void DDS_3Ph::update(void){
+	byte phaseIndexU, phaseIndexV, phaseIndexW;
+
+	phaseAccu+=tuningWord;
+	phaseIndexU=(byte)(phaseAccu>>24);
+	phaseIndexV=(byte)((phaseAccu+PHASE_OFFS_120)>>24); //add fixed phase offset for +120 deg.
+	phaseIndexW=(byte)((phaseAccu+PHASE_OFFS_240)>>24); //add fixed phase offset for +240 deg.
+	outu=pgm_read_byte_near(sinlut256+phaseIndexU) - 0x7F;
+	outv=pgm_read_byte_near(sinlut256+phaseIndexV) - 0x7F;
+	outw=pgm_read_byte_near(sinlut256+phaseIndexW) - 0x7F;
+}
+
+
+#elif defined (DDS_10BIT)
+/* * * init functions * * */
 void DDS_1Ch::begin(float _freq, float _startPhase, float _deltat) {
 	freq=_freq;
 	deltat=_deltat;
@@ -140,57 +190,9 @@ void DDS_3Ph::begin(float _freq, float _startPhase, float _deltat){
 	// start phase
 	phaseAccu=startPhase*pow(2,32)/(2*PI);;
 }
-#endif
-
-
 
 
 /* * * Periodic update functions * * */
-#ifdef EIGHTBIT
-void DDS_1Ch::update(void){
-	byte phaseIndex;
-
-	phaseAccu+=tuningWord;	//update the phase accumulator
-	phaseIndex=(byte)(phaseAccu>>24);	//truncate the phase accumulator to obtain the phase index pointer
-	out1=pgm_read_byte_near(sinlut256+phaseIndex) - 0x7F;	//read amplitude from look-up table and convert to signed int.
-}
-
-void DDS_2Ch::update(void){
-	byte phaseIndex1, phaseIndex2;
-
-	phaseAccu1+=tuningWord1;
-	phaseAccu2+=tuningWord2;
-	phaseIndex1=(byte)(phaseAccu1>>24);
-	phaseIndex2=(byte)(phaseAccu2>>24);
-	out1=pgm_read_byte_near(sinlut256+phaseIndex1) - 0x7F;
-	out2=pgm_read_byte_near(sinlut256+phaseIndex2) - 0x7F;
-}
-
-void DDS_IQ::update(void){
-	byte phaseIndexI, phaseIndexQ;
-
-	phaseAccu+=tuningWord;
-	phaseIndexI=(byte)(phaseAccu>>24);
-	phaseIndexQ=(byte)((phaseAccu+PHASE_OFFS_90)>>24); //add fixed phase offset for +90deg.
-	outi=pgm_read_byte_near(sinlut256+phaseIndexI) - 0x7F;
-	outq=pgm_read_byte_near(sinlut256+phaseIndexQ) - 0x7F;
-}
-
-void DDS_3Ph::update(void){
-	byte phaseIndexU, phaseIndexV, phaseIndexW;
-
-	phaseAccu+=tuningWord;
-	phaseIndexU=(byte)(phaseAccu>>24);
-	phaseIndexV=(byte)((phaseAccu+PHASE_OFFS_120)>>24); //add fixed phase offset for +120 deg.
-	phaseIndexW=(byte)((phaseAccu+PHASE_OFFS_240)>>24); //add fixed phase offset for +240 deg.
-	outu=pgm_read_byte_near(sinlut256+phaseIndexU) - 0x7F;
-	outv=pgm_read_byte_near(sinlut256+phaseIndexV) - 0x7F;
-	outw=pgm_read_byte_near(sinlut256+phaseIndexW) - 0x7F;
-}
-#endif
-
-
-#ifdef TENBIT
 void DDS_1Ch::update(void){
 	unsigned int phaseIndex;
 

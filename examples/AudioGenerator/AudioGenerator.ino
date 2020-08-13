@@ -2,13 +2,17 @@
  *
  * File: AudioGenerator.ino
  * Purpose: Native Direct Digital Synthesizer library example project
- * Version: 1.0.0
- * Date: 24-10-2018
+ * Version: 1.0.2
+ * Release date: 24-10-2018
+ * Last edit date: 10-08-2020
+ * 
  * URL: https://github.com/MartinStokroos/NativeDDS
  * License: MIT License
  *
+ * Version history:
  * v1.0.0, 24 Oct 2018 - initial release
- * v1.0.1, 18 Nov 2018 - some textual changes in comments
+ * v1.0.1, 18 Nov 2018 - textual changes in comments
+ * v1.0.2, 10-08-2020 - select 8-bit/10bit DDS from main c file but it does not work (yet).
  * 
  * This sketch demonstrates the Native DDS library. Native DDS is a Direct Digital Synthesizer
  * algorithm that runs in software on the Arduino. In this example, a 220Hz and a 440Hz sine wave are 
@@ -27,7 +31,8 @@
  *
 */
 
-#include <NativeDDS.h> //define EIGHTBIT
+//#define DDS_8BIT  //Why does defining it here won't work? Now it still should be done from NativeDDS.h
+#include "NativeDDS.h"
 
 //#define DEBUG
 
@@ -83,9 +88,9 @@ void loop() {
 
 
 
-//******************************************************************
-// Timer2 ISR, running at 31372.549Hz, also the update rate of the DDS
-//******************************************************************
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+* Timer2 ISR, running at 31372.549Hz, and is also the update rate for the DDS
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 ISR(TIMER2_OVF_vect) {
 	#if defined(DEBUG)
 		digitalWriteFast(DEBUG_PIN, true);  // check the loop period time and the execution time in the loop.

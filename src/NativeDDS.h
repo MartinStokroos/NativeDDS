@@ -2,8 +2,13 @@
 * 
 * File: NativeDDS.h
 * Purpose: Native Direct Digital Synthesizer library functions
-* Version: 1.0.0
-* Date: 22-10-2018
+* Version: 1.0.1
+* Release date: 22-10-2018
+* Last edit date: 10-08-2020
+*
+* Version history:
+* v1.0.2, 10-08-2020 - changed the option switch DDS_8BIT/DDS_10BIT
+*
 * URL: https://github.com/MartinStokroos/NativeDDS
 * License: MIT License
 *
@@ -30,17 +35,19 @@
 #include "Arduino.h"
 #include "avr/pgmspace.h"
 
-#define EIGHTBIT
-//#define TENBIT
+
+#define DDS_8BIT	//preferably define in main.c before including NativeDDS.h, but it does not seem to work(?)
+//#define DDS_10BIT
+
 
 #define PHASE_OFFS_90 1073741824UL
 #define PHASE_OFFS_120 1431655765UL
 #define PHASE_OFFS_240 2863311531UL
 
 
-#ifdef EIGHTBIT
-// look-up table of 256 sine values
-const int sinlut256[] PROGMEM = {
+#if defined(DDS_8BIT)
+	// look-up table of 256 sine values
+	const int sinlut256[] PROGMEM = {
 		127, 130, 133, 136, 139, 143, 146, 149,
 		152, 155, 158, 161, 164, 167, 170, 173,
 		176, 178, 181, 184, 187, 190, 192, 195,
@@ -73,13 +80,83 @@ const int sinlut256[] PROGMEM = {
 		56, 59, 62, 64, 67, 70, 73, 76,
 		78, 81, 84, 87, 90, 93, 96, 99,
 		102, 105, 108, 111, 115, 118, 121, 124
-		};
-#endif
+	};
 
 
-#ifdef TENBIT
-// look-up table with 1024 sine values
-const int sinlut1024[] PROGMEM = {
+	class DDS_1Ch
+	{
+	public:
+		void begin(float _freq, float _startPhase, float _deltat);
+		void update(void);
+
+		float freq;
+		float deltat;
+		float startPhase;
+		int out1;
+	private:
+		volatile unsigned long tuningWord;
+		volatile unsigned long phaseAccu;
+	};
+
+
+	class DDS_2Ch
+	{
+	public:
+		void begin(float _freq1, float _freq2, float _startPhase1, float _startPhase2, float _deltat);
+		void update(void);
+
+		float freq1;
+		float freq2;
+		float deltat;
+		float startPhase1;
+		float startPhase2;
+		int out1;
+		int out2;
+	private:
+		volatile unsigned long tuningWord1;
+		volatile unsigned long tuningWord2;
+		volatile unsigned long phaseAccu1;
+		volatile unsigned long phaseAccu2;
+	};
+
+
+	class DDS_IQ
+	{
+	public:
+		void begin(float _freq, float _startPhase, float _deltat);
+		void update(void);
+
+		float freq;
+		float deltat;
+		float startPhase;
+		int outi;
+		int outq;
+	private:
+		volatile unsigned long tuningWord;
+		volatile unsigned long phaseAccu;
+	};
+
+
+	class DDS_3Ph
+	{
+	public:
+		void begin(float _freq, float _startPhase, float _deltat);
+		void update(void);
+
+		float freq;
+		float deltat;
+		float startPhase;
+		int outu;
+		int outv;
+		int outw;
+	private:
+		volatile unsigned long tuningWord;
+		volatile unsigned long phaseAccu;
+	};
+
+#elif defined (DDS_10BIT)
+	// look-up table with 1024 sine values
+	const int sinlut1024[] PROGMEM = {
 		  511, 514, 517, 520, 524, 527, 530, 533,
 		  536, 539, 542, 545, 549, 552, 555, 558,
 		  561, 564, 567, 570, 574, 577, 580, 583,
@@ -208,158 +285,85 @@ const int sinlut1024[] PROGMEM = {
 		  436, 439, 442, 445, 448, 452, 455, 458,
 		  461, 464, 467, 470, 473, 477, 480, 483,
 		  486, 489, 492, 495, 498, 502, 505, 508
-};
-#endif
+	};
 
 
-#ifdef EIGHTBIT
-class DDS_1Ch
-{
-public:
-	void begin(float _freq, float _startPhase, float _deltat);
-	void update(void);
+	class DDS_1Ch
+	{
+	public:
+		void begin(float _freq, float _startPhase, float _deltat);
+		void update(void);
+		//void updateFreq(void);
+		//void updatePhase(void);
 
-	float freq;
-	float deltat;
-	float startPhase;
-	int out1;
-private:
-	volatile unsigned long tuningWord;
-	volatile unsigned long phaseAccu;
-};
-
-
-class DDS_2Ch
-{
-public:
-	void begin(float _freq1, float _freq2, float _startPhase1, float _startPhase2, float _deltat);
-	void update(void);
-
-	float freq1;
-	float freq2;
-	float deltat;
-	float startPhase1;
-	float startPhase2;
-	int out1;
-	int out2;
-private:
-	volatile unsigned long tuningWord1;
-	volatile unsigned long tuningWord2;
-	volatile unsigned long phaseAccu1;
-	volatile unsigned long phaseAccu2;
-};
+		float freq;
+		float deltat;
+		float startPhase;
+		int out1;
+	private:
+		volatile unsigned long tuningWord;
+		volatile unsigned long phaseAccu;
+	};
 
 
-class DDS_IQ
-{
-public:
-	void begin(float _freq, float _startPhase, float _deltat);
-	void update(void);
+	class DDS_2Ch
+	{
+	public:
+		void begin(float _freq1, float _freq2, float _startPhase1, float _startPhase2, float _deltat);
+		void update(void);
 
-	float freq;
-	float deltat;
-	float startPhase;
-	int outi;
-	int outq;
-private:
-	volatile unsigned long tuningWord;
-	volatile unsigned long phaseAccu;
-};
+		float freq1;
+		float freq2;
+		float deltat;
+		float startPhase1;
+		float startPhase2;
+		int out1;
+		int out2;
 
-
-class DDS_3Ph
-{
-public:
-	void begin(float _freq, float _startPhase, float _deltat);
-	void update(void);
-
-	float freq;
-	float deltat;
-	float startPhase;
-	int outu;
-	int outv;
-	int outw;
-private:
-	volatile unsigned long tuningWord;
-	volatile unsigned long phaseAccu;
-};
-#endif
+	private:
+		volatile unsigned long tuningWord1;
+		volatile unsigned long tuningWord2;
+		volatile unsigned long phaseAccu1;
+		volatile unsigned long phaseAccu2;
+	};
 
 
-#ifdef TENBIT
-class DDS_1Ch
-{
-public:
-	void begin(float _freq, float _startPhase, float _deltat);
-	void update(void);
-	//void updateFreq(void);
-	//void updatePhase(void);
+	class DDS_IQ
+	{
+	public:
+		void begin(float _freq, float _startPhase, float _deltat);
+		void update(void);
 
-	float freq;
-	float deltat;
-	float startPhase;
-	int out1;
-private:
-	volatile unsigned long tuningWord;
-	volatile unsigned long phaseAccu;
-};
+		float freq;
+		float deltat;
+		float startPhase;
+		int outi;
+		int outq;
+	private:
+		volatile unsigned long tuningWord;
+		volatile unsigned long phaseAccu;
+	};
 
 
-class DDS_2Ch
-{
-public:
-	void begin(float _freq1, float _freq2, float _startPhase1, float _startPhase2, float _deltat);
-	void update(void);
+	class DDS_3Ph
+	{
+	public:
+		void begin(float _freq, float _startPhase, float _deltat);
+		void update(void);
 
-	float freq1;
-	float freq2;
-	float deltat;
-	float startPhase1;
-	float startPhase2;
-	int out1;
-	int out2;
+		float freq;
+		float deltat;
+		float startPhase;
+		int outu;
+		int outv;
+		int outw;
+	private:
+		volatile unsigned long tuningWord;
+		volatile unsigned long phaseAccu;
+	};
 
-private:
-	volatile unsigned long tuningWord1;
-	volatile unsigned long tuningWord2;
-	volatile unsigned long phaseAccu1;
-	volatile unsigned long phaseAccu2;
-};
-
-
-class DDS_IQ
-{
-public:
-	void begin(float _freq, float _startPhase, float _deltat);
-	void update(void);
-
-	float freq;
-	float deltat;
-	float startPhase;
-	int outi;
-	int outq;
-private:
-	volatile unsigned long tuningWord;
-	volatile unsigned long phaseAccu;
-};
-
-
-class DDS_3Ph
-{
-public:
-	void begin(float _freq, float _startPhase, float _deltat);
-	void update(void);
-
-	float freq;
-	float deltat;
-	float startPhase;
-	int outu;
-	int outv;
-	int outw;
-private:
-	volatile unsigned long tuningWord;
-	volatile unsigned long phaseAccu;
-};
+#else
+	#error "Define according the used DDS core, DDS_8BIT or DDS_10BIT)"
 #endif
 
 #endif /* NativeDDS_H_ */
