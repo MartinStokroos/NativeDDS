@@ -2,11 +2,13 @@
 * 
 * File: NativeDDS.cpp
 * Purpose: Native Direct Digital Synthesizer library functions
-* Version: 1.0.1
+* Version: 1.2.0
 * Release date: 22-10-2018
-* Last edit date: 10-08-2020
+* Last edit date: 01-11-2020
 *
 * Version history:
+*
+* v1.2.0, 01-11-2020 - now with seperate instance methods for 8-bit and 10-bit DDS and signed/unsigned wave outputs.
 * v1.0.2, 10-08-2020 - changed the option switch DDS_8BIT/DDS_10BIT
 *
 * URL: https://github.com/MartinStokroos/NativeDDS
@@ -37,202 +39,215 @@
 #endif
 
 
-#if defined(DDS_8BIT)
 /* * * init functions * * */
-void DDS_1Ch::begin(float _freq, float _startPhase, float _deltat) {
-	freq=_freq;
-	deltat=_deltat;
-	startPhase=_startPhase;
+void DDS_8bit_1Ch::begin(float _freq, float _startPhase, float _deltat) {
+	freq = _freq;
+	deltat = _deltat;
+	startPhase = _startPhase;
 	// calculate the DDS tuning word
-	tuningWord=(unsigned long)(pow(2,32)*freq*deltat);
+	tuningWord = (unsigned long)(pow(2,32)*freq*deltat);
 	// set the starting phase
-	if(startPhase<=0 || startPhase>2*PI){
-		startPhase=0;
+	if(startPhase <= 0 || startPhase>2*PI){
+		startPhase = 0;
 	}
-	phaseAccu=(unsigned long)(startPhase*pow(2,32)/(2*PI));
+	phaseAccu = (unsigned long)(startPhase*pow(2,32)/(2*PI));
 }
 
-void DDS_2Ch::begin(float _freq1, float _freq2, float _startPhase1, float _startPhase2, float _deltat) {
-	freq1=_freq1;
-	freq2=_freq2;
-	deltat=_deltat;
-	startPhase1=_startPhase1;
-	startPhase2=_startPhase2;
+void DDS_8bit_2Ch::begin(float _freq1, float _freq2, float _startPhase1, float _startPhase2, float _deltat) {
+	freq1 = _freq1;
+	freq2 = _freq2;
+	deltat = _deltat;
+	startPhase1 = _startPhase1;
+	startPhase2 = _startPhase2;
 	// calculate the DDS tuning word
-	tuningWord1=(unsigned long)(pow(2,32)*freq1*deltat);
-	tuningWord2=(unsigned long)(pow(2,32)*freq2*deltat);
+	tuningWord1 = (unsigned long)(pow(2,32)*freq1*deltat);
+	tuningWord2 = (unsigned long)(pow(2,32)*freq2*deltat);
 	// set the starting phase
-	if(startPhase1<=0 || startPhase1>2*PI){
-		startPhase1=0;
+	if(startPhase1 <= 0 || startPhase1 > 2*PI){
+		startPhase1 = 0;
 	}
-	if(startPhase2<=0 || startPhase2>2*PI){
-		startPhase2=0;
+	if(startPhase2 <= 0 || startPhase2 > 2*PI){
+		startPhase2 = 0;
 	}
-	phaseAccu1=(unsigned long)(startPhase1*pow(2,32)/(2*PI));
-	phaseAccu2=(unsigned long)(startPhase2*pow(2,32)/(2*PI));
+	phaseAccu1 = (unsigned long)(startPhase1*pow(2,32)/(2*PI));
+	phaseAccu2 = (unsigned long)(startPhase2*pow(2,32)/(2*PI));
 }
 
-void DDS_IQ::begin(float _freq, float _startPhase, float _deltat) {
-	freq=_freq;
-	deltat=_deltat;
-	startPhase=_startPhase;
+void DDS_8bit_IQ::begin(float _freq, float _startPhase, float _deltat) {
+	freq = _freq;
+	deltat = _deltat;
+	startPhase = _startPhase;
 	// calculate DDS tuning word
-	tuningWord=(unsigned long)(pow(2,32)*freq*deltat);
+	tuningWord = (unsigned long)(pow(2,32)*freq*deltat);
 	// set the starting phase
-	phaseAccu=startPhase*pow(2,32)/(2*PI);
+	phaseAccu = startPhase*pow(2,32)/(2*PI);
 }
 
-void DDS_3Ph::begin(float _freq, float _startPhase, float _deltat){
-	freq=_freq;
-	deltat=_deltat;
-	startPhase=_startPhase;
+void DDS_8bit_3Ph::begin(float _freq, float _startPhase, float _deltat){
+	freq = _freq;
+	deltat = _deltat;
+	startPhase = _startPhase;
 	// calculate the DDS tuning word
-	tuningWord=(unsigned long)(pow(2,32)*freq*deltat);
+	tuningWord = (unsigned long)(pow(2,32)*freq*deltat);
 	// set the starting phase
-	phaseAccu=startPhase*pow(2,32)/(2*PI);;
+	phaseAccu = startPhase*pow(2,32)/(2*PI);;
 }
 
 
 /* * * Periodic update functions * * */
-void DDS_1Ch::update(void){
+void DDS_8bit_1Ch::update(void){
 	byte phaseIndex;
 
-	phaseAccu+=tuningWord;	//update the phase accumulator
-	phaseIndex=(byte)(phaseAccu>>24);	//truncate the phase accumulator to obtain the phase index pointer
-	out1=pgm_read_byte_near(sinlut256+phaseIndex) - 0x7F;	//read amplitude from look-up table and convert to signed int.
+	phaseAccu += tuningWord; // update the phase accumulator
+	phaseIndex = (byte)(phaseAccu>>24); // truncate the phase accumulator to obtain the phase index pointer
+	uout1 = pgm_read_byte_near(sinlut256+phaseIndex); // read amplitude from look-up table
+	out1 = uout1 - 0x7F; // convert to signed int.
 }
 
-void DDS_2Ch::update(void){
+void DDS_8bit_2Ch::update(void){
 	byte phaseIndex1, phaseIndex2;
 
-	phaseAccu1+=tuningWord1;
-	phaseAccu2+=tuningWord2;
-	phaseIndex1=(byte)(phaseAccu1>>24);
-	phaseIndex2=(byte)(phaseAccu2>>24);
-	out1=pgm_read_byte_near(sinlut256+phaseIndex1) - 0x7F;
-	out2=pgm_read_byte_near(sinlut256+phaseIndex2) - 0x7F;
+	phaseAccu1 += tuningWord1;
+	phaseAccu2 += tuningWord2;
+	phaseIndex1 = (byte)(phaseAccu1>>24);
+	phaseIndex2 = (byte)(phaseAccu2>>24);
+	uout1 = pgm_read_byte_near(sinlut256+phaseIndex1);
+	out1 = uout1 - 0x7F;
+	uout2 = pgm_read_byte_near(sinlut256+phaseIndex2);
+	out2 = uout2 - 0x7F;
 }
 
-void DDS_IQ::update(void){
+void DDS_8bit_IQ::update(void){
 	byte phaseIndexI, phaseIndexQ;
 
-	phaseAccu+=tuningWord;
-	phaseIndexI=(byte)(phaseAccu>>24);
-	phaseIndexQ=(byte)((phaseAccu+PHASE_OFFS_90)>>24); //add fixed phase offset for +90deg.
-	outi=pgm_read_byte_near(sinlut256+phaseIndexI) - 0x7F;
-	outq=pgm_read_byte_near(sinlut256+phaseIndexQ) - 0x7F;
+	phaseAccu += tuningWord;
+	phaseIndexI = (byte)(phaseAccu>>24);
+	phaseIndexQ = (byte)((phaseAccu+PHASE_OFFS_90)>>24); //add fixed phase offset for +90deg.
+	uouti = pgm_read_byte_near(sinlut256+phaseIndexI);
+	outi = uouti - 0x7F;
+	uoutq = pgm_read_byte_near(sinlut256+phaseIndexQ);
+	outq = uoutq - 0x7F;
 }
 
-void DDS_3Ph::update(void){
+void DDS_8bit_3Ph::update(void){
 	byte phaseIndexU, phaseIndexV, phaseIndexW;
 
-	phaseAccu+=tuningWord;
-	phaseIndexU=(byte)(phaseAccu>>24);
-	phaseIndexV=(byte)((phaseAccu+PHASE_OFFS_120)>>24); //add fixed phase offset for +120 deg.
-	phaseIndexW=(byte)((phaseAccu+PHASE_OFFS_240)>>24); //add fixed phase offset for +240 deg.
-	outu=pgm_read_byte_near(sinlut256+phaseIndexU) - 0x7F;
-	outv=pgm_read_byte_near(sinlut256+phaseIndexV) - 0x7F;
-	outw=pgm_read_byte_near(sinlut256+phaseIndexW) - 0x7F;
+	phaseAccu += tuningWord;
+	phaseIndexU = (byte)(phaseAccu>>24);
+	phaseIndexV = (byte)((phaseAccu+PHASE_OFFS_120)>>24); //add fixed phase offset for +120 deg.
+	phaseIndexW = (byte)((phaseAccu+PHASE_OFFS_240)>>24); //add fixed phase offset for +240 deg.
+	uoutu = pgm_read_byte_near(sinlut256+phaseIndexU);
+	outu = uoutu - 0x7F;
+	uoutv = pgm_read_byte_near(sinlut256+phaseIndexV);
+	outv = uoutv - 0x7F;
+	uoutw = pgm_read_byte_near(sinlut256+phaseIndexW);
+	outw = uoutw - 0x7F;
 }
 
 
-#elif defined (DDS_10BIT)
 /* * * init functions * * */
-void DDS_1Ch::begin(float _freq, float _startPhase, float _deltat) {
-	freq=_freq;
-	deltat=_deltat;
-	startPhase=_startPhase;
+void DDS_10bit_1Ch::begin(float _freq, float _startPhase, float _deltat) {
+	freq = _freq;
+	deltat = _deltat;
+	startPhase = _startPhase;
 	// calculate DDS tuning word
-	tuningWord=(unsigned long)(pow(2,32)*freq*deltat);
+	tuningWord = (unsigned long)(pow(2,32)*freq*deltat);
 	// set the starting phase
-	if(startPhase<=0 || startPhase>2*PI){
-		startPhase=0;
+	if(startPhase <= 0 || startPhase > 2*PI){
+		startPhase = 0;
 	}
-	phaseAccu=(unsigned long)(startPhase*pow(2,32)/(2*PI));
+	phaseAccu = (unsigned long)(startPhase*pow(2,32)/(2*PI));
 }
 
-void DDS_2Ch::begin(float _freq1, float _freq2, float _startPhase1, float _startPhase2, float _deltat) {
-	freq1=_freq1;
-	freq2=_freq2;
-	deltat=_deltat;
-	startPhase1=_startPhase1;
-	startPhase2=_startPhase2;
+void DDS_10bit_2Ch::begin(float _freq1, float _freq2, float _startPhase1, float _startPhase2, float _deltat) {
+	freq1 = _freq1;
+	freq2 = _freq2;
+	deltat = _deltat;
+	startPhase1 = _startPhase1;
+	startPhase2 = _startPhase2;
 	// calculate the DDS tuning word
-	tuningWord1=(unsigned long)(pow(2,32)*freq1*deltat);
-	tuningWord2=(unsigned long)(pow(2,32)*freq2*deltat);
+	tuningWord1 = (unsigned long)(pow(2,32)*freq1*deltat);
+	tuningWord2 = (unsigned long)(pow(2,32)*freq2*deltat);
 	// start phase
-	if(startPhase1<=0 || startPhase1>2*PI){
-		startPhase1=0;
+	if(startPhase1 <= 0 || startPhase1 > 2*PI){
+		startPhase1 = 0;
 	}
-	if(startPhase2<=0 || startPhase2>2*PI){
-		startPhase2=0;
+	if(startPhase2 <= 0 || startPhase2 > 2*PI){
+		startPhase2 = 0;
 	}
-	phaseAccu1=(unsigned long)(startPhase1*pow(2,32)/(2*PI));
-	phaseAccu2=(unsigned long)(startPhase2*pow(2,32)/(2*PI));
+	phaseAccu1 = (unsigned long)(startPhase1*pow(2,32)/(2*PI));
+	phaseAccu2 = (unsigned long)(startPhase2*pow(2,32)/(2*PI));
 }
 
-void DDS_IQ::begin(float _freq, float _startPhase, float _deltat){
-	freq=_freq;
-	deltat=_deltat;
-	startPhase=_startPhase;
+void DDS_10bit_IQ::begin(float _freq, float _startPhase, float _deltat){
+	freq = _freq;
+	deltat = _deltat;
+	startPhase = _startPhase;
 	// calculate the DDS tuning word
-	tuningWord=(unsigned long)(pow(2,32)*freq*deltat);
+	tuningWord = (unsigned long)(pow(2,32)*freq*deltat);
 	// set the starting phase
-	phaseAccu=startPhase*pow(2,32)/(2*PI);
+	phaseAccu = startPhase*pow(2,32)/(2*PI);
 }
 
-void DDS_3Ph::begin(float _freq, float _startPhase, float _deltat){
-	freq=_freq;
-	deltat=_deltat;
-	startPhase=_startPhase;
+void DDS_10bit_3Ph::begin(float _freq, float _startPhase, float _deltat){
+	freq = _freq;
+	deltat = _deltat;
+	startPhase = _startPhase;
 	// calculate the DDS tuning word
-	tuningWord=(unsigned long)(pow(2,32)*freq*deltat);
+	tuningWord = (unsigned long)(pow(2,32)*freq*deltat);
 	// start phase
-	phaseAccu=startPhase*pow(2,32)/(2*PI);;
+	phaseAccu = startPhase*pow(2,32)/(2*PI);;
 }
 
 
 /* * * Periodic update functions * * */
-void DDS_1Ch::update(void){
+void DDS_10bit_1Ch::update(void){
 	unsigned int phaseIndex;
 
-	phaseAccu+=tuningWord;
-	phaseIndex=(phaseAccu>>22);
-	out1=pgm_read_word(sinlut1024+phaseIndex) - 0x1FF;
+	phaseAccu += tuningWord;
+	phaseIndex = (phaseAccu>>22);
+	uout1 = pgm_read_word(sinlut1024+phaseIndex);
+	out1 = uout1 - 0x1FF;
 }
 
-void DDS_2Ch::update(void){
+void DDS_10bit_2Ch::update(void){
 	unsigned int phaseIndex1, phaseIndex2;
 
-	phaseAccu1+=tuningWord1;
-	phaseAccu2+=tuningWord2;
-	phaseIndex1=(phaseAccu1>>22);
-	phaseIndex2=(phaseAccu2>>22);
-	out1=pgm_read_word(sinlut1024+phaseIndex1) - 0x1FF;
-	out2=pgm_read_word(sinlut1024+phaseIndex2) - 0x1FF;
+	phaseAccu1 += tuningWord1;
+	phaseAccu2 += tuningWord2;
+	phaseIndex1 = (phaseAccu1>>22);
+	phaseIndex2 = (phaseAccu2>>22);
+	uout1 = pgm_read_word(sinlut1024+phaseIndex1);
+	out1 = uout1 - 0x1FF;
+	uout2 = pgm_read_word(sinlut1024+phaseIndex2);
+	out2 = uout2 - 0x1FF;
 }
 
-void DDS_IQ::update(void){
+void DDS_10bit_IQ::update(void){
 	unsigned int phaseIndexI, phaseIndexQ;
 
-	phaseAccu+=tuningWord;
-	phaseIndexI=(phaseAccu>>22);
-	phaseIndexQ=((phaseAccu+PHASE_OFFS_90)>>22); //adding a fixed phase offset for +90deg.
-	outi=pgm_read_word(sinlut1024+phaseIndexI) - 0x1FF;
-	outq=pgm_read_word(sinlut1024+phaseIndexQ) - 0x1FF;
+	phaseAccu += tuningWord;
+	phaseIndexI = (phaseAccu>>22);
+	phaseIndexQ = ((phaseAccu+PHASE_OFFS_90)>>22); // adding a fixed phase offset for +90deg.
+	uouti = pgm_read_word(sinlut1024+phaseIndexI);
+	outi = uouti - 0x1FF;
+	uoutq = pgm_read_word(sinlut1024+phaseIndexQ);
+	outq = uoutq - 0x1FF;
 }
 
-void DDS_3Ph::update(void){
+void DDS_10bit_3Ph::update(void){
 	unsigned int phaseIndexU, phaseIndexV, phaseIndexW;
 
-	phaseAccu+=tuningWord;
-	phaseIndexU=(phaseAccu>>22);
-	phaseIndexV=((phaseAccu+PHASE_OFFS_120)>>22); //adding a fixed phase offset for +120deg.
-	phaseIndexW=((phaseAccu+PHASE_OFFS_240)>>22); //adding a fixed phase offset for +240deg.
-	outu=pgm_read_word(sinlut1024+phaseIndexU) - 0x1FF;
-	outv=pgm_read_word(sinlut1024+phaseIndexV) - 0x1FF;
-	outw=pgm_read_word(sinlut1024+phaseIndexW) - 0x1FF;
+	phaseAccu += tuningWord;
+	phaseIndexU = (phaseAccu>>22);
+	phaseIndexV = ((phaseAccu+PHASE_OFFS_120)>>22); // adding a fixed phase offset for +120deg.
+	phaseIndexW = ((phaseAccu+PHASE_OFFS_240)>>22); // adding a fixed phase offset for +240deg.
+	uoutu = pgm_read_word(sinlut1024+phaseIndexU);
+	outu = uoutu - 0x1FF;
+	uoutv = pgm_read_word(sinlut1024+phaseIndexV);
+	outv = uoutv - 0x1FF;
+	uoutw = pgm_read_word(sinlut1024+phaseIndexW);
+	outw = uoutw - 0x1FF;
 }
-#endif
 
 // end of NativeDDS.cpp

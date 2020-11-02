@@ -2,15 +2,16 @@
  *
  * File: WobblingServo.ino
  * Purpose: Native Direct Digital Synthesizer library example project
- * Version: 1.0.0
+ * Version: 1.0.2
  * First release date: 23-10-2018
- * Last edit date: 10-08-2020
+ * Last edit date: 02-11-2020
  * 
  * URL: https://github.com/MartinStokroos/NativeDDS
  * License: MIT License
  *
  * Version history:
  * v1.0.1, 10-08-2020 - select 8-bit/10bit DDS from main c file. Does not work (yet).
+ * v1.0.2, 02-11-2020 - library update for seperate instance methods for 8-bit and 10-bit DDS.
  *
  * This sketch demonstrates the Native DDS library. Native DDS is a Direct Digital Synthesizer
  * algorithm that runs in software on the Arduino. In this example the DDS sine wave output frequency
@@ -23,8 +24,6 @@
  *
 */
 
-
-//#define DDS_8BIT  //Why does defining it here won't work? Now it still should be done from NativeDDS.h
 #include "NativeDDS.h"
 #include <Servo.h>
 
@@ -38,29 +37,30 @@ double frequency = 0.1; // output frequency in Hz
 int k=0, servoAngle;
 unsigned long nextLoop;
 
-DDS_1Ch mySine; // create an instance of DDS_1Ch
+DDS_8bit_1Ch mySine; // create an instance of DDS_8bit_1Ch
 Servo myServo;  // create an instance of Servo
 
 
 void setup() {
-  pinMode(DEBUG_PIN, OUTPUT);  
+  pinMode(DEBUG_PIN, OUTPUT);
+  
   myServo.attach(SERVO_PIN);
-  myServo.write( (MIN_ANGLE + MAX_ANGLE)/2 );  //Set the servo to the mid-position
+  myServo.write( (MIN_ANGLE + MAX_ANGLE)/2 );  // Set the servo to the mid-position
 
-  mySine.begin(frequency, 0, LPERIOD*1.0e-6);    //Initialize the DDS (frequency, startphase, sample clock period)
+  mySine.begin(frequency, 0, LPERIOD*1.0e-6);    // Initialize the DDS (frequency, startphase, sample clock period)
 
-  nextLoop = micros() + LPERIOD;    //Set the loop timer variable for the next loop interval.
+  nextLoop = micros() + LPERIOD;    // Set the loop timer variable for the next loop interval.
 }
 
 
 
 void loop() {
   // run repeatedly:
-  digitalWrite(DEBUG_PIN, HIGH);  //For checking loop period time and execution (signal high) time with an oscilloscope. 
+  digitalWrite(DEBUG_PIN, HIGH);  // For checking the loop period time and the execution time in the loop.
   
-  mySine.update();  //DDS update
+  mySine.update();  // DDS update
 
-  if(k>=100) {   //update servo at 1/100 of loop rate (=10Hz)
+  if(k>=100) {   // update servo at 1/100 of loop rate (=10Hz)
     servoAngle = map(mySine.out1, -127, 127, MIN_ANGLE, MAX_ANGLE); // remap DDS output to servo degrees servo displacement.
     myServo.write(servoAngle);
     k=0;
@@ -69,7 +69,7 @@ void loop() {
   
   digitalWrite(DEBUG_PIN, LOW);
   
-  while(nextLoop > micros());  //Wait until the end of the time interval 
+  while(nextLoop > micros());  // Wait until the end of the time interval 
     nextLoop += LPERIOD;  // set next loop time at current time + LOOP_PERIOD
 } // measured execution time <20us
 

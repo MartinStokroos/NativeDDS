@@ -2,9 +2,9 @@
  *
  * File: AudioGenerator.ino
  * Purpose: Native Direct Digital Synthesizer library example project
- * Version: 1.0.2
+ * Version: 1.0.3
  * Release date: 24-10-2018
- * Last edit date: 10-08-2020
+ * Last edit date: 02-11-2020
  * 
  * URL: https://github.com/MartinStokroos/NativeDDS
  * License: MIT License
@@ -13,6 +13,7 @@
  * v1.0.0, 24 Oct 2018 - initial release
  * v1.0.1, 18 Nov 2018 - textual changes in comments
  * v1.0.2, 10-08-2020 - select 8-bit/10bit DDS from main c file but it does not work (yet).
+ * v1.0.3, 02-11-2020 - library update for seperate instance methods for 8-bit and 10-bit DDS
  * 
  * This sketch demonstrates the Native DDS library. Native DDS is a Direct Digital Synthesizer
  * algorithm that runs in software on the Arduino. In this example, a 220Hz and a 440Hz sine wave are 
@@ -31,7 +32,6 @@
  *
 */
 
-//#define DDS_8BIT  //Why does defining it here won't work? Now it still should be done from NativeDDS.h
 #include "NativeDDS.h"
 
 //#define DEBUG
@@ -50,7 +50,7 @@
 const float Ts = 3.1875E-5; // Timer2 period
 float f = 220.0; // Wanted DDS output frequency
 
-DDS_2Ch mySine;	// Create instance of DDS_2Ch for a dual channel DDS.
+DDS_8bit_2Ch mySine;	// Create instance of DDS_8bit_2Ch for a dual channel DDS.
 
 
 
@@ -97,8 +97,8 @@ ISR(TIMER2_OVF_vect) {
 	#endif
 
 	mySine.update();
-	OCR2B = mySine.out1 + 127;  // output PWM_OUT1 directly updated with the OCR2B register value (220Hz)
-	OCR2A = mySine.out2 + 127;  // output PWM_OUT2 directly updated with the OCR2A register value (440Hz)
+	OCR2B = mySine.uout1;  // PWM_OUT1 directly updated by writing the OCR2B register value (220Hz)
+	OCR2A = mySine.uout2;  // PWM_OUT2 directly updated by writing the OCR2A register value (440Hz)
 
 	#if defined(DEBUG)
 		digitalWriteFast(DEBUG_PIN, false);
@@ -106,4 +106,3 @@ ISR(TIMER2_OVF_vect) {
 }
 
 // end of AudioGenerator.ino
-
